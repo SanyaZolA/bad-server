@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { FilterQuery } from 'mongoose'
+import safeRegex from 'safe-regex'
 import NotFoundError from '../errors/not-found-error'
 import Order from '../models/order'
 import User, { IUser } from '../models/user'
@@ -90,8 +91,12 @@ export const getCustomers = async (
                 $lte: Number(orderCountTo),
             }
         }
-
+        const searchRaw = req.query.search;
+        const searchValue = typeof searchRaw === 'string' ? searchRaw : '';
         if (search) {
+                if (!safeRegex(searchValue)) {
+        throw new Error('Небезопасное регулярное выражение')
+                  }
             const searchRegex = new RegExp(search as string, 'i')
             const orders = await Order.find(
                 {

@@ -1,4 +1,6 @@
+import fs from 'fs'
 import { errors } from 'celebrate'
+import rateLimit from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import 'dotenv/config'
@@ -13,6 +15,13 @@ import routes from './routes'
 const { PORT = 3000 } = process.env
 const app = express()
 
+const uploadDir = path.join(__dirname, 'public/temp')
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true })
+  console.log('Папка для загрузок создана:', uploadDir)
+}
+
 app.use(cookieParser())
 
 app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
@@ -24,6 +33,15 @@ app.use(urlencoded({ extended: true }))
 app.use(json())
 
 app.options('*', cors())
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'Слишком много запросов.',
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+app.use(limiter) 
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)

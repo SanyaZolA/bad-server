@@ -14,8 +14,11 @@ export default function AdminFilterOrders() {
 
     const { updateFilter, clearFilters } = useActionCreators(ordersActions)
     const filterOrderOption = useSelector(ordersSelector.selectFilterOption)
+    
+type FilterPrimitive = string | number;
+type FilterValue = FilterPrimitive | { value: FilterPrimitive } | null | undefined;
 
-    const handleFilter = (filters: Record<string, any>) => {
+    const handleFilter = (filters: Record<string, FilterValue>) => {
         dispatch(updateFilter({ ...filters, status: filters.status.value }))
         const queryParams: { [key: string]: string } = {}
         Object.entries(filters).forEach(([key, value]) => {

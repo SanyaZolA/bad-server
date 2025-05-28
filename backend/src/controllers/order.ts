@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { FilterQuery, Error as MongooseError, Types } from 'mongoose'
+import safeRegex from 'safe-regex'
 import BadRequestError from '../errors/bad-request-error'
 import NotFoundError from '../errors/not-found-error'
 import Order, { IOrder } from '../models/order'
@@ -89,7 +90,12 @@ export const getOrders = async (
             { $unwind: '$products' },
         ]
 
+        const searchRaw = req.query.search;
+        const searchValue = typeof searchRaw === 'string' ? searchRaw : '';
         if (search) {
+            if (!safeRegex(searchValue)) {
+        throw new Error('Небезопасное регулярное выражение')
+    }
             const searchRegex = new RegExp(search as string, 'i')
             const searchNumber = Number(search)
 
@@ -182,9 +188,13 @@ export const getOrdersCurrentUser = async (
             )
 
         let orders = user.orders as unknown as IOrder[]
-
+        
+        const searchRaw = req.query.search;
+        const searchValue = typeof searchRaw === 'string' ? searchRaw : '';
         if (search) {
-            // если не экранировать то получаем Invalid regular expression: /+1/i: Nothing to repeat
+            if (!safeRegex(searchValue)) {
+        throw new Error('Небезопасное регулярное выражение')
+    }
             const searchRegex = new RegExp(search as string, 'i')
             const searchNumber = Number(search)
             const products = await Product.find({ title: searchRegex })
@@ -193,7 +203,7 @@ export const getOrdersCurrentUser = async (
             orders = orders.filter((order) => {
                 // eslint-disable-next-line max-len
                 const matchesProductTitle = order.products.some((product) =>
-                    productIds.some((id) => id.equals(product._id))
+                    productIds.some((id) => (id as Types.ObjectId).equals(product._id as Types.ObjectId))
                 )
                 // eslint-disable-next-line max-len
                 const matchesOrderNumber =
@@ -295,7 +305,7 @@ export const createOrder = async (
             req.body
 
         items.forEach((id: Types.ObjectId) => {
-            const product = products.find((p) => p._id.equals(id))
+            const product = products.find((p) => (p._id as Types.ObjectId).equals(id as Types.ObjectId))
             if (!product) {
                 throw new BadRequestError(`Товар с id ${id} не найден`)
             }

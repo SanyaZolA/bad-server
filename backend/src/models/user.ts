@@ -13,7 +13,9 @@ export enum Role {
     Admin = 'admin',
 }
 
+
 export interface IUser extends Document {
+    _id: Types.ObjectId
     name: string
     email: string
     password: string
@@ -129,6 +131,7 @@ userSchema.pre('save', async function hashingPassword(next) {
 })
 
 // Можно лучше: централизованное создание accessToken и  refresh токена
+
 
 userSchema.methods.generateAccessToken = function generateAccessToken() {
     const user = this
