@@ -37,9 +37,23 @@ const usePagination = <T, U>(
     const limit = Number(searchParams.get('limit')) || defaultLimit
 
     const fetchData = async (params: Record<string, unknown>) => {
-        const response = await dispatch(asyncAction(params))
-        setTotalPages(response.payload.pagination.totalPages)
+    const response = await dispatch(asyncAction(params))
+
+    if (
+        response.payload &&
+        typeof response.payload === 'object' &&
+        'pagination' in response.payload &&
+        response.payload.pagination &&
+        typeof response.payload.pagination === 'object' &&
+        'totalPages' in response.payload.pagination
+    ) {
+        setTotalPages(
+            (response.payload as any).pagination.totalPages
+        )
+    } else {
+        console.warn('Некорректная структура payload:', response.payload)
     }
+}
 
     useEffect(() => {
         const params = Object.fromEntries(searchParams.entries())
@@ -50,7 +64,7 @@ const usePagination = <T, U>(
         })
     }, [currentPage, limit, searchParams])
 
-    const updateURL = (newParams: Record<string, unknown>) => {
+    const updateURL = (newParams: Record<string, any>) => {
         3
         const updatedParams = new URLSearchParams(searchParams)
         Object.entries(newParams).forEach(([key, value]) => {
