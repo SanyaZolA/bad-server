@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
                 ? `../public/${process.env.UPLOAD_PATH_TEMP}`
                 : '../public'
         )
-        console.log('File will be saved to:', destinationPath) // Логирование пути
+        console.log('File will be saved to:', destinationPath)
         cb(null, destinationPath)
     },
 
@@ -29,7 +29,7 @@ const storage = multer.diskStorage({
         cb: FileNameCallback
     ) => {
         const uniqueFileName = `${faker.string.uuid()}${extname(file.originalname)}`
-        console.log('Generated unique filename:', uniqueFileName) // Логирование имени файла
+        console.log('Generated unique filename:', uniqueFileName)
         cb(null, uniqueFileName)
     },
 })
