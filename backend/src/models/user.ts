@@ -13,9 +13,13 @@ export enum Role {
     Admin = 'admin',
 }
 
+interface IUserMethods {
+    generateAccessToken(): string
+    generateRefreshToken(): Promise<string>
+    calculateOrderStats(): Promise<void>
+}
 
-export interface IUser extends Document {
-    _id: Types.ObjectId
+export interface IUser extends Document, IUserMethods {
     name: string
     email: string
     password: string
@@ -27,14 +31,8 @@ export interface IUser extends Document {
     orders: Types.ObjectId[]
     lastOrderDate: Date | null
     lastOrder: Types.ObjectId | null
-}
-
-interface IUserMethods {
-    generateAccessToken(): string
-    generateRefreshToken(): Promise<string>
-    toJSON(): string
-    calculateOrderStats(): Promise<void>
-}
+    _id: Types.ObjectId
+ }
 
 interface IUserModel extends Model<IUser, {}, IUserMethods> {
     findUserByCredentials: (
@@ -119,7 +117,7 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
 )
 
 // Возможно добавление хеша в контроллере регистрации
-userSchema.pre('save', async function hashingPassword(next) {
+userSchema.pre('save', async function (next) {
     try {
         if (this.isModified('password')) {
             this.password = md5(this.password)
@@ -132,9 +130,8 @@ userSchema.pre('save', async function hashingPassword(next) {
 
 // Можно лучше: централизованное создание accessToken и  refresh токена
 
-
 userSchema.methods.generateAccessToken = function generateAccessToken() {
-    const user = this
+    const user = this as IUser
     // Создание accessToken токена возможно в контроллере авторизации
     return jwt.sign(
         {
@@ -151,7 +148,7 @@ userSchema.methods.generateAccessToken = function generateAccessToken() {
 
 userSchema.methods.generateRefreshToken =
     async function generateRefreshToken() {
-        const user = this
+        const user = this as IUser
         // Создание refresh токена возможно в контроллере авторизации/регистрации
         const refreshToken = jwt.sign(
             {
@@ -194,7 +191,7 @@ userSchema.statics.findUserByCredentials = async function findByCredentials(
 }
 
 userSchema.methods.calculateOrderStats = async function calculateOrderStats() {
-    const user = this
+    const user = this as IUser
     const orderStats = await mongoose.model('order').aggregate([
         { $match: { customer: user._id } },
         {
