@@ -1,5 +1,6 @@
 import fs from 'fs'
 import { errors } from 'celebrate'
+import rateLimit from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import 'dotenv/config'
@@ -32,6 +33,15 @@ app.use(json())
 
 app.options('*', cors())
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  message: 'Слишком много запросов.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter) 
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)
