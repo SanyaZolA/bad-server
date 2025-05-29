@@ -12,7 +12,7 @@ export const uploadFile = async (
   }
 
   try {
-    const fileName = req.file.filename // уже уникальный
+    const fileName = req.file.filename
     console.log('File uploaded successfully:', fileName)
 
     return res.status(constants.HTTP_STATUS_CREATED).send({
