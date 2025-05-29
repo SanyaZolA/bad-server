@@ -24,8 +24,7 @@ if (!fs.existsSync(uploadDir)) {
 
 app.use(cookieParser())
 
-app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
-// app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors({ origin: ORIGIN_ALLOW, credentials: true, allowedHeaders: ['Authorization', 'Content-Type']}));
 
 app.use(serveStatic(path.join(__dirname, 'public')))
 
