@@ -11,12 +11,14 @@ export default function serveStatic(baseDir: string) {
         fs.access(filePath, fs.constants.F_OK, (err) => {
             if (err) {
                 // Файл не существует отдаем дальше мидлварам
+                console.error('File not found:', filePath); // Логирование ошибки
                 return next()
             }
             // Файл существует, отправляем его клиенту
-            return res.sendFile(filePath, (err) => {
-                if (err) {
-                    next(err)
+            return res.sendFile(filePath, (error) => {
+                if (error) {
+                    console.error('Error serving file:', error); // Логирование ошибки
+                    next(error)
                 }
             })
         })

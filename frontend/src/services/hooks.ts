@@ -21,6 +21,7 @@ export const createAsyncThunk = createThunkHook.withTypes<{
     extra: WebLarekAPI
     state: RootState
     dispatch: AppDispatch
+    rejectValue: unknown
 }>()
 
 export const useActionCreators = <Actions extends ActionCreatorsMapObject>(

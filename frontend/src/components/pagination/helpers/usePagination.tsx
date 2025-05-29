@@ -1,6 +1,6 @@
 import { AsyncThunk } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from '@store/hooks'
-import { RootState } from '@store/store'
+import { AppDispatch, RootState } from '@store/store'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -16,7 +16,11 @@ interface PaginationResult<_, U> {
 }
 
 const usePagination = <T, U>(
-    asyncAction: AsyncThunk<T, Record<string, unknown>, any>,
+    asyncAction: AsyncThunk<T, Record<string, unknown>, {
+        dispatch: AppDispatch
+        state: RootState
+        rejectValue: unknown
+    }>,
     selector: (state: RootState) => U[],
     defaultLimit: number
 ): PaginationResult<T, U> => {
@@ -32,10 +36,24 @@ const usePagination = <T, U>(
 
     const limit = Number(searchParams.get('limit')) || defaultLimit
 
-    const fetchData = async (params: Record<string, any>) => {
-        const response: any = await dispatch(asyncAction(params))
-        setTotalPages(response.payload.pagination.totalPages)
+    const fetchData = async (params: Record<string, unknown>) => {
+    const response = await dispatch(asyncAction(params))
+
+    if (
+        response.payload &&
+        typeof response.payload === 'object' &&
+        'pagination' in response.payload &&
+        response.payload.pagination &&
+        typeof response.payload.pagination === 'object' &&
+        'totalPages' in response.payload.pagination
+    ) {
+        setTotalPages(
+            (response.payload as any).pagination.totalPages
+        )
+    } else {
+        console.warn('Некорректная структура payload:', response.payload)
     }
+}
 
     useEffect(() => {
         const params = Object.fromEntries(searchParams.entries())

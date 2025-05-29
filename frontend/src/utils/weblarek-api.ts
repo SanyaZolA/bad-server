@@ -77,21 +77,26 @@ class Api {
         options: RequestInit
     ) => {
         try {
-            return await this.request<T>(endpoint, options)
-        } catch (error) {
-            const refreshData = await this.refreshToken()
-            if (!refreshData.success) {
-                return Promise.reject(refreshData)
-            }
-            setCookie('accessToken', refreshData.accessToken)
-            return await this.request<T>(endpoint, {
-                ...options,
-                headers: {
-                    ...options.headers,
-                    Authorization: `Bearer ${getCookie('accessToken')}`,
-                },
-            })
-        }
+  return await this.request<T>(endpoint, options)
+} catch (error) {
+  try {
+    const refreshData = await this.refreshToken()
+    if (!refreshData.success) {
+      return Promise.reject(refreshData)
+    }
+    setCookie('accessToken', refreshData.accessToken)
+    return await this.request<T>(endpoint, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${getCookie('accessToken')}`,
+      },
+    })
+  } catch (refreshError) {
+    console.log(refreshError)
+    return Promise.reject(refreshError)
+  }
+}
     }
 }
 
