@@ -1,4 +1,4 @@
-// upload.middleware.ts
+
 import { Request, Express, Response, NextFunction } from 'express'
 import multer, { FileFilterCallback } from 'multer'
 import { join, extname } from 'path'

@@ -1,4 +1,3 @@
-// upload.controller.ts
 import { Request, Response, NextFunction } from 'express'
 import { constants } from 'http2'
 import BadRequestError from '../errors/bad-request-error'
